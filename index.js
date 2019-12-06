@@ -169,7 +169,9 @@ client.on("voiceStateUpdate" , (oldMember, newMember) => {
     initialized.forEach(elem=>{
     if(elem.room.room_id == newMember.voiceChannelID){
       let members = channelMembers(elem.room.room_id);
-      elem.members = members;}});
+      elem.members = members;
+      elem.room_min += 1;
+    }});
   console.log(initialized);}
   //When someone joining channel END
 
@@ -178,7 +180,9 @@ client.on("voiceStateUpdate" , (oldMember, newMember) => {
     initialized.forEach(elem=>{
     if(elem.room.room_id == oldMember.voiceChannelID){
       let members = channelMembers(elem.room.room_id);
-      elem.members = members;}})
+      elem.members = members;
+      elem.room_min -= 1;
+    }})
     console.log(initialized);}
   //When someone leaving channel END
 });
