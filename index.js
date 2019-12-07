@@ -9,8 +9,9 @@ var path = require ("path");
 const mongoose = require("mongoose");
 const fs = require('fs');
 let users = 0;
-const all_rooms = require('./all_rooms');
+let all_rooms = require('./all_rooms');
 const db = require('./db')
+
 
 
 ////////////////////////////////////
@@ -79,11 +80,43 @@ if(!message.content.startsWith(prefix)) return;
 let messageArray = message.content.split(' ') ;// разделение пробелами
 let command = messageArray[0]; // команда после префикса
 console.log(command);
+if (command == "!refresh")
+{
+  // console.log("yes command equals refresh")
+
+  //grab all rooms again 
+  initialized = []
+  let refreshed_rooms = []
+  db.data.find({} , {room_id: 1 , _id:0 , game_type: 1 , room_name: 1 ,server_name: 1 , server_id: 1 , iconURL: 1    } , async (err , data)=>{
+   
+    try{
+      data.forEach(elem =>{
+        refreshed_rooms.push(elem);
+        // console.log(elem)
+    })
+      console.log(refreshed_rooms)
+      refreshed_rooms.forEach(async room =>{
+        try{
+          init_room(room.room_id , room.server_id , room)
+          // console.log(room.room_id)
+        }catch(bofl)
+        {
+          console.log(bofl)
+        }
+      })
+    }catch(rofl)
+    {
+      console.log(rofl)
+    }
+});
+  
+
+}else{
 let args = messageArray.slice(1); // аргументы после команды
 let command_file = client.commands.get(command.slice(prefix.length)) ;
 if (command_file) command_file.run(client, message, args);
-})
-//Bot command procedure
+}})
+//Bot command procedure END
 //////////////////////////////////////////                      
 
 
@@ -103,6 +136,22 @@ function channelMembers (room_ID , server_ID) { // return Array
   }
   return arrayName;
 }
+async function init_room (room_ID , server_ID , room)
+{
+  try{
+    const members_i =  channelMembers(room_ID, server_ID)
+    const guild_i =  client.guilds.get(server_ID)
+    const channel_i = await guild_i.channels.get(room_ID);
+    const URL_i = await channel_i.createInvite();
+    console.log(channel_i.userLimit)
+    initialized.push({room: room ,members: members_i , room_link: URL_i.url , room_min: members_i.length , room_max: channel_i.userLimit  })
+
+  }catch(err){
+    console.log(err)
+  }
+}
+
+
 function getChannelLink (link , URL)
 {
   link.then(prom => {URL = link.url ; return URL})
@@ -135,7 +184,7 @@ var initialized = [];
       // console.log(mymemebers)
       //channel.userlimit = max of the guys in the room 
       const URL = await channel.createInvite();
-      console.log(channel.userLimit)
+      // console.log(channel.userLimit)
       initialized.push({room: room ,members: members , room_link: URL.url , room_min: members.length , room_max: channel.userLimit  })
       
     }catch(e)
@@ -146,6 +195,7 @@ var initialized = [];
   })
   function loggging_shit() {console.log(initialized)}
   setTimeout(loggging_shit, 5000);
+  module.exports.initialized = initialized
   // console.log("I'm ready ^_^");
 });
 

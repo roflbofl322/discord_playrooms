@@ -2,6 +2,7 @@ const Discord = module.require('discord.js');
 const mongoose = require("mongoose");
 const db = require('../../db.js');
 
+
 const exampleEmbed = new Discord.RichEmbed()
 	.setColor('#0xfd6102')
 	.setTitle('!add_room')
@@ -14,6 +15,7 @@ const exampleEmbed = new Discord.RichEmbed()
 
 module.exports.run = async (client, message, args) => 
 {
+    
     if(args[0] == undefined){
       message.channel.send(exampleEmbed);
       return;}
@@ -32,6 +34,9 @@ module.exports.run = async (client, message, args) =>
       if(err) return console.log(err);
       console.log(serv.server_id + " saved to db")
     });
+    // console.log("All rooms are initialized by now like this: " + initka.initialized[0].room_link)
+
+
 }
 
 module.exports.help = {
