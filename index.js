@@ -11,6 +11,8 @@ const fs = require('fs');
 let users = 0;
 let all_rooms = require('./all_rooms');
 const db = require('./db')
+var myFlag = 1
+
 
 
 
@@ -83,7 +85,7 @@ console.log(command);
 if (command == "!refresh")
 {
   // console.log("yes command equals refresh")
-
+  if(myFlag){
   //grab all rooms again 
   initialized = []
   let refreshed_rooms = []
@@ -109,12 +111,34 @@ if (command == "!refresh")
       console.log(rofl)
     }
 });
-  
+    myFlag = 0
+    function flag() {
+      myFlag = 1
+    }
+    setTimeout(flag, 10000);
+  }else{console.log("Typing comannd 2 fast bruh")}
 
 }else{
 let args = messageArray.slice(1); // аргументы после команды
 let command_file = client.commands.get(command.slice(prefix.length)) ;
-if (command_file) command_file.run(client, message, args);
+
+if (command_file) {
+  
+  if(myFlag){
+    
+    
+  command_file.run(client, message, args);
+  myFlag = 0
+    function flag() {
+      myFlag = 1
+    }
+    setTimeout(flag, 10000);
+    
+    
+}else{
+  console.log("Sry ur typing command 2 quicly")
+}
+}
 }})
 //Bot command procedure END
 //////////////////////////////////////////                      
@@ -195,7 +219,7 @@ var initialized = [];
   })
   function loggging_shit() {console.log(initialized)}
   setTimeout(loggging_shit, 5000);
-  module.exports.initialized = initialized
+  
   // console.log("I'm ready ^_^");
 });
 
@@ -214,28 +238,57 @@ client.on("channelDelete",(channel)=>{
 })
 
 client.on("voiceStateUpdate" , (oldMember, newMember) => {  
-  //When someone joining channel
-  if(oldMember.voiceChannelID == undefined){
+  //When someone joining channel without room before
+  if(oldMember.voiceChannelID == undefined && newMember.voiceChannelID != undefined){
     initialized.forEach(elem=>{
     if(elem.room.room_id == newMember.voiceChannelID){
       let members = channelMembers(elem.room.room_id);
       elem.members = members;
       elem.room_min += 1;
+      console.log("no channel before -> entered room")
     }});
-  console.log(initialized);}
+  // console.log(initialized);
+}
   //When someone joining channel END
+ 
 
   //When someone leaving channel
-  if (newMember.voiceChannelID == undefined){
+  else if (newMember.voiceChannelID == undefined){
+    //if someone left room
     initialized.forEach(elem=>{
     if(elem.room.room_id == oldMember.voiceChannelID){
       let members = channelMembers(elem.room.room_id);
       elem.members = members;
       elem.room_min -= 1;
     }})
-    console.log(initialized);}
+    // console.log(initialized);
+  console.log("Yes i was in the room ->  and i left it")}
+  else{
+    // console.log("and here comes the shit")
+    // console.log("I was sitting here" + oldMember.voiceChannel.name)
+    // console.log("And now i'm sitting here" + newMember.voiceChannel.name)
+  
+    initialized.forEach(elem=>{
+      if(elem.room.room_id == oldMember.voiceChannelID){
+        let members = channelMembers(elem.room.room_id);
+        elem.members = members;
+        elem.room_min -= 1;
+      }})
+      initialized.forEach(elem=>{
+        if(elem.room.room_id == newMember.voiceChannelID){
+          let members = channelMembers(elem.room.room_id);
+          elem.members = members;
+          elem.room_min += 1;
+          console.log("no channel before -> entered room")
+        }});  
+      
+  }
   //When someone leaving channel END
 });
+
+ //1 no room before -> enter room
+  //2 leaving room
+  //3 changed room 
 
 app.use((req ,res , next) => {
 	res.header('Access-Control-Allow-Origin','*');
@@ -256,7 +309,7 @@ app.use((req ,res , next) => {
      initialized
   })
 
-  client.channels.get('611158172354347041').send("someone entered site");
+  // client.channels.get('611158172354347041').send("someone entered site");
 }) 
 app.listen(5555 , ()=>{
   console.log("Server is started.");
