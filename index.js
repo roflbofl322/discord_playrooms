@@ -8,10 +8,11 @@ client.login(config.token);
 var path = require ("path");
 const mongoose = require("mongoose");
 const fs = require('fs');
-let users = 0;
 let all_rooms = require('./all_rooms');
 const db = require('./db')
 var myFlag = 1
+const categories = require('./category_dbSchema')
+let all_categories = require("./categories")
 
 
 
@@ -88,6 +89,13 @@ if (command == "!refresh")
   if(myFlag){
   //grab all rooms again 
   initialized = []
+  all_categories = []
+  categories.data.find({} , {category : 1 , _id: 0    } , (err , data)=>{
+    // categories.push(data)
+    data.forEach(element => {
+        all_categories.push(element.get('category'))
+    });
+ });
   let refreshed_rooms = []
   db.data.find({} , {room_id: 1 , _id:0 , game_type: 1 , room_name: 1 ,server_name: 1 , server_id: 1 , iconURL: 1    } , async (err , data)=>{
    
@@ -96,7 +104,7 @@ if (command == "!refresh")
         refreshed_rooms.push(elem);
         // console.log(elem)
     })
-      console.log(refreshed_rooms)
+      // console.log(refreshed_rooms)
       refreshed_rooms.forEach(async room =>{
         try{
           init_room(room.room_id , room.server_id , room)
@@ -118,7 +126,8 @@ if (command == "!refresh")
     setTimeout(flag, 10000);
   }else{console.log("Typing comannd 2 fast bruh")}
 
-}else{
+}//->if command equals "refresh" END
+else{
 let args = messageArray.slice(1); // аргументы после команды
 let command_file = client.commands.get(command.slice(prefix.length)) ;
 
@@ -167,7 +176,7 @@ async function init_room (room_ID , server_ID , room)
     const guild_i =  client.guilds.get(server_ID)
     const channel_i = await guild_i.channels.get(room_ID);
     const URL_i = await channel_i.createInvite();
-    console.log(channel_i.userLimit)
+    // console.log(channel_i.userLimit)
     initialized.push({room: room ,members: members_i , room_link: URL_i.url , room_min: members_i.length , room_max: channel_i.userLimit  })
 
   }catch(err){
@@ -228,7 +237,7 @@ client.on("channelDelete",(channel)=>{
   let channel_to_remove_from_db = channel.id.toString();
   db.data.deleteOne({room_id: channel_to_remove_from_db}, function(err) {
     if (!err) {
-            console.log(err)
+            console.log("Room deleted succesfully")
     }
     else {
             console.log(err)
@@ -304,9 +313,10 @@ app.use((req ,res , next) => {
 });
 
  app.get('/', function(req, res) {
-  console.log(users);
+   console.log("Page was updated")
   res.status(200).json({
-     initialized
+      initialized,
+      all_categories
   })
 
   // client.channels.get('611158172354347041').send("someone entered site");
