@@ -8,9 +8,10 @@ let categories = []
 module.exports.run = async (client, message, args) => 
 {
     db.data.find({} , {category : 1 , _id: 0    } , (err , data)=>{
-        categories.push(data)
-        console.log(categories)
+      
+        // console.log(categories)
         message.channel.send(data)
+        // module.exports.categories = categories
      });
      
 }

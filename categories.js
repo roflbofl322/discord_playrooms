@@ -12,6 +12,7 @@ let categories = []
         data.forEach(element => {
             categories.push(element.get('category'))
         });
+        module.exports.categories  = categories
      });
     }catch(error)
     {
@@ -22,4 +23,4 @@ let categories = []
 
 
 
-module.exports.categories  = categories
+

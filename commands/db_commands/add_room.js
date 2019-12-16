@@ -15,13 +15,18 @@ const exampleEmbed = new Discord.RichEmbed()
 
 module.exports.run = async (client, message, args) => 
 {
-    
+    const categories = require('../../categories')
+    console.log(categories.categories)
     if(args[0] == undefined){
       message.channel.send(exampleEmbed);
       return;}
     if(args[1] == undefined){
       message.channel.send(exampleEmbed);
-      return;}
+      return;}else if(!categories.categories.includes(args[1]))
+      {
+        console.log("sry there is no such category")
+        return
+      }
 
 
       db.data.findOne({room_id: args[0]} , { }, (err,data)=>
