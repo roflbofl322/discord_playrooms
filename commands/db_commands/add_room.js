@@ -22,11 +22,27 @@ module.exports.run = async (client, message, args) =>
     if(args[1] == undefined){
       message.channel.send(exampleEmbed);
       return;}
-   
-    
-    var guild = client.guilds.get(message.guild.id);
-    var channel = guild.channels.get(args[0]);
-    var db_data = new db.data({server_id: message.guild.id  , room_id: args[0] , game_type: args[1].toLowerCase() , room_name: channel.name , server_name: message.guild.name , iconURL: message.guild.iconURL});
+
+
+      db.data.findOne({room_id: args[0]} , { }, (err,data)=>
+    {
+        if(data)
+        {
+          console.log("There is such room already")
+          // console.log(data)
+          return;
+        }
+        else{
+          // var db_data = new db.data({category: args[0]});
+          // db_data.save((err,serv) =>{
+          // if(err) return console.log(err);
+          // console.log(serv.category + " saved to db")
+          // });
+          // console.log("There is no room like this in db")
+          
+         var guild = client.guilds.get(message.guild.id);
+         var channel = guild.channels.get(args[0]);
+         var db_data = new db.data({server_id: message.guild.id  , room_id: args[0] , game_type: args[1].toLowerCase() , room_name: channel.name , server_name: message.guild.name , iconURL: message.guild.iconURL});
   
     // console.log(channel.name);
 
@@ -34,6 +50,9 @@ module.exports.run = async (client, message, args) =>
       if(err) return console.log(err);
       console.log(serv.server_id + " saved to db")
     });
+        }
+    })
+    
     // console.log("All rooms are initialized by now like this: " + initka.initialized[0].room_link)
 
 
