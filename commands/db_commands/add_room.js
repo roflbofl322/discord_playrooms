@@ -9,8 +9,9 @@ const exampleEmbed = new Discord.RichEmbed()
 	.setURL('https://discord.js.org/')
 	.setAuthor('Lilith')
 	.setDescription('Please use the following template: !add_room roomID game_type')
-	.addField('game_types:', 'dota2 pubg lol cs', true)
-	.addField('Example', '!add_room 13372281488 dota2',true)
+  .addField('game_types:', 'dota2, cs, ** !get_categories** ', true)
+  .addField('Example', '!add_room 13372281488 dota2',true)
+  // .addField('game_types:', '**!get_categories** for all categories', true)
 
 
 module.exports.run = async (client, message, args) => 
