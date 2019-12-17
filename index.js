@@ -124,7 +124,7 @@ if (command == "!refresh")
       myFlag = 1
     }
     setTimeout(flag, 10000);
-  }else{console.log("Typing comannd 2 fast bruh")}
+  }else{message.channel.send("You're typing commands to fast bruh... Have a chill for 10 seconds.")}
 
 }//->if command equals "refresh" END
 else{
@@ -145,7 +145,7 @@ if (command_file) {
     
     
 }else{
-  console.log("Sry ur typing command 2 quicly")
+  message.channel.send("You're typing commands to fast bruh... Have a chill for 10 seconds.")
 }
 }
 }})

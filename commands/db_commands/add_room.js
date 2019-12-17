@@ -17,7 +17,7 @@ module.exports.run = async (client, message, args) =>
 {
     if(!message.member.hasPermission("ADMINISTRATOR"))
     {
-      console.log("You dont have enough permissions on this server")
+      message.channel.send("You dont have enough permissions on this server")
       return 
       
     }else{
@@ -28,14 +28,14 @@ module.exports.run = async (client, message, args) =>
       message.channel.send(exampleEmbed);
       return;}else if(!(message.guild.channels.get(args[0])))
       {
-        console.log("There is no room id on this server like that")
+        message.channel.send("There is no room on this server with that ID.")
         return
       }
     if(args[1] == undefined){
       message.channel.send(exampleEmbed);
       return;}else if(!categories.categories.includes(args[1]))
       {
-        console.log("sry there is no such category")
+        message.channel.send("Sry, there is no category matched: \""+args[1]+"\". Type **!get_categories** command and choose from the list")
         return
       }
 
@@ -44,7 +44,7 @@ module.exports.run = async (client, message, args) =>
     {
         if(data)
         {
-          console.log("There is such room already")
+          message.channel.send("This room is already on the monitoring")
           // console.log(data)
           return;
         }

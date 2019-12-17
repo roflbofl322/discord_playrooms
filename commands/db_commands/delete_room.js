@@ -7,12 +7,14 @@ module.exports.run = async (client, message, args) =>
 
     if(!message.member.hasPermission("ADMINISTRATOR"))
     {
-        console.log("You dont have enough permissions for this operation")
+        // console.log("You dont have enough permissions for this operation")
+        message.channel.send("You dont have enough permission for that, bruh.")
+        return
     }
     else{
     if(!message.guild.channels.get(args[0]))
     {
-        console.log("THere is no room like this on this server to delete")
+        message.channel.send("There is no room like this on this server to delete")
         return
     }
     // !delete_room room_id
