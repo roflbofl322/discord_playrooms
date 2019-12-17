@@ -15,11 +15,22 @@ const exampleEmbed = new Discord.RichEmbed()
 
 module.exports.run = async (client, message, args) => 
 {
+    if(!message.member.hasPermission("ADMINISTRATOR"))
+    {
+      console.log("You dont have enough permissions on this server")
+      return 
+      
+    }else{
+
     const categories = require('../../categories')
-    console.log(categories.categories)
+    // console.log(categories.categories)
     if(args[0] == undefined){
       message.channel.send(exampleEmbed);
-      return;}
+      return;}else if(!(message.guild.channels.get(args[0])))
+      {
+        console.log("There is no room id on this server like that")
+        return
+      }
     if(args[1] == undefined){
       message.channel.send(exampleEmbed);
       return;}else if(!categories.categories.includes(args[1]))
@@ -59,7 +70,7 @@ module.exports.run = async (client, message, args) =>
     })
     
     // console.log("All rooms are initialized by now like this: " + initka.initialized[0].room_link)
-
+  }
 
 }
 

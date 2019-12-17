@@ -226,7 +226,7 @@ var initialized = [];
     }
 
   })
-  function loggging_shit() {console.log(initialized)}
+  function loggging_shit() {}
   setTimeout(loggging_shit, 5000);
   
   // console.log("I'm ready ^_^");

@@ -4,6 +4,17 @@ const db = require('../../db.js');
 
 module.exports.run = async (client, message, args) => 
 {
+
+    if(!message.member.hasPermission("ADMINISTRATOR"))
+    {
+        console.log("You dont have enough permissions for this operation")
+    }
+    else{
+    if(!message.guild.channels.get(args[0]))
+    {
+        console.log("THere is no room like this on this server to delete")
+        return
+    }
     // !delete_room room_id
     let room_id_to_delete = args[0].toString();
     // console.log(typeof(room_id_to_delete))
@@ -16,6 +27,7 @@ module.exports.run = async (client, message, args) =>
         }
     });
     // console.log(args[0])
+    }
 }
 
 
