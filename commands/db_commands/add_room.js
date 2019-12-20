@@ -65,7 +65,7 @@ module.exports.run = async (client, message, args) =>
 
     db_data.save((err,serv) =>{
       if(err) return console.log(err);
-      console.log(serv.server_id + " saved to db")
+      message.channel.send(serv.server_id + " saved to db. Type **!refresh** for applyting the changes")
     });
         }
     })

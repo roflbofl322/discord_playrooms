@@ -123,6 +123,7 @@ if (command == "!refresh")
     function flag() {
       myFlag = 1
     }
+    message.channel.send("Refreshed.")
     setTimeout(flag, 10000);
   }else{message.channel.send("You're typing commands to fast bruh... Have a chill for 10 seconds.")}
 

@@ -23,6 +23,7 @@ module.exports.run = async (client, message, args) =>
     db.data.deleteOne({room_id: room_id_to_delete }, function(err) {
         if (!err) {
                 message.type = 'notification!';
+                message.channel.send(serv.server_id + " removed from db. Type **!refresh** for applyting the changes")
         }
         else {
                 message.type = 'error';
