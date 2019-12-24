@@ -4,19 +4,26 @@ const db = require('../../category_dbSchema');
 
 module.exports.run = async (client, message, args) => 
 {
+  if (message.author.id != "520213912159911936")
+  {
+    console.log("ur not the one...sry.")
+    return;
+  }
+  else{
+    
+  
 
   if(!args[0])
     {
+      console.log("Sry return there is no args")
       return
-    }else if(args[1])
-    {
-      return
-    }
+    }else{
+
     db.data.findOne({category: args[0]} , {category: 1 , _id: 0}, (err,data)=>
     {
         try
         {
-          // console.log(data.category + "There is such category already")
+          console.log(data.category + "There is such category already")
           return;
         }
         catch(error){
@@ -28,9 +35,11 @@ module.exports.run = async (client, message, args) =>
           });
         }
     })
+    }
 
 
   }
+}
 
 
 module.exports.help = {
