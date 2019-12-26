@@ -155,9 +155,8 @@ if (command_file) {
 
 
 function channelMembers (room_ID , server_ID) { // return Array
-  
-  try{
   var channelMembers = client.channels.get(room_ID).members;
+  
   var arrayName = [];
   for (let mapV of channelMembers.values()) {
     const user_id = mapV.user.id
@@ -170,10 +169,6 @@ function channelMembers (room_ID , server_ID) { // return Array
 
   }
   return arrayName;
-}
-catch(err){
-console.log(err)
-}
 }
 async function init_room (room_ID , server_ID , room)
 {
