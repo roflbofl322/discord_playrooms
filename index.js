@@ -128,6 +128,109 @@ if (command == "!refresh")
   }else{message.channel.send("You're typing commands to fast bruh... Have a chill for 10 seconds.")}
 
 }//->if command equals "refresh" END
+else if(command == "!add_room")
+{
+
+  const exampleEmbed = new Discord.RichEmbed()
+	.setColor('#0xfd6102')
+	.setTitle('!add_room')
+	.setURL('https://discord.js.org/')
+	.setAuthor('Lilith')
+	.setDescription('Please use the following template: !add_room roomID game_type')
+  .addField('game_types:', 'dota2, cs, ** !get_categories** ', true)
+  .addField('Example', '!add_room 13372281488 dota2',true)
+  // .addField('game_types:', '**!get_categories** for all categories', true)
+
+
+
+    if(!message.member.hasPermission("ADMINISTRATOR"))
+    {
+      message.channel.send("You dont have enough permissions on this server")
+      return 
+      
+    }else{
+
+    const categories = require('./categories')
+    let args = messageArray.slice(1); // аргументы после команды
+    // console.log(categories.categories)
+    if(args[0] == undefined){
+      message.channel.send(exampleEmbed);
+      return;}else if(!(message.guild.channels.get(args[0])))
+      {
+        message.channel.send("There is no room on this server with that ID.")
+        return
+      }
+    if(args[1] == undefined){
+      message.channel.send(exampleEmbed);
+      return;}else if(!categories.categories.includes(args[1]))
+      {
+        message.channel.send("Sry, there is no category matched: \""+args[1]+"\". Type **!get_categories** command and choose from the list")
+        return
+      }
+
+
+      db.data.findOne({room_id: args[0]} , { }, (err,data)=>
+    {
+        if(data)
+        {
+          message.channel.send("This room is already on the monitoring")
+          // console.log(data)
+          return;
+        }
+        else{
+          // var db_data = new db.data({category: args[0]});
+          // db_data.save((err,serv) =>{
+          // if(err) return console.log(err);
+          // console.log(serv.category + " saved to db")
+          // });
+          // console.log("There is no room like this in db")
+          
+         var guild = client.guilds.get(message.guild.id);
+         var channel = guild.channels.get(args[0]);
+         var db_data = new db.data({server_id: message.guild.id  , room_id: args[0] , game_type: args[1].toLowerCase() , room_name: channel.name , server_name: message.guild.name , iconURL: message.guild.iconURL});
+  
+    // console.log(channel.name);
+
+    db_data.save((err,serv) =>{
+      if(err) return console.log(err);
+      message.channel.send(serv.server_id + " saved to db. Enter room and check website!")
+      
+      initialized = []
+      let refreshed_rooms = []
+  db.data.find({} , {room_id: 1 , _id:0 , game_type: 1 , room_name: 1 ,server_name: 1 , server_id: 1 , iconURL: 1    } , async (err , data)=>{
+   
+    try{
+      data.forEach(elem =>{
+        refreshed_rooms.push(elem);
+        // console.log(elem)
+    })
+      // console.log(refreshed_rooms)
+      refreshed_rooms.forEach(async room =>{
+        try{
+          init_room(room.room_id , room.server_id , room)
+          // console.log(room.room_id)
+        }catch(bofl)
+        {
+          console.log(bofl)
+        }
+      })
+    }catch(rofl)
+    {
+      console.log(rofl)
+    }
+});
+
+    });
+        }
+    })
+    
+    // console.log("All rooms are initialized by now like this: " + initka.initialized[0].room_link)
+  }
+
+
+
+
+}
 else{
 let args = messageArray.slice(1); // аргументы после команды
 let command_file = client.commands.get(command.slice(prefix.length)) ;
