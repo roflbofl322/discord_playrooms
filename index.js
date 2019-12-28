@@ -124,8 +124,8 @@ if (command == "!refresh")
       myFlag = 1
     }
     message.channel.send("Refreshed.")
-    setTimeout(flag, 10000);
-  }else{message.channel.send("You're typing commands to fast bruh... Have a chill for 10 seconds.")}
+    setTimeout(flag, 3000);
+  }else{message.channel.send("There are lots of commands i'm prociding right now. **Please try again after 3-5 seconds**.")}
 
 }//->if command equals "refresh" END
 else if(command == "!add_room")
@@ -245,11 +245,11 @@ if (command_file) {
     function flag() {
       myFlag = 1
     }
-    setTimeout(flag, 10000);
+    setTimeout(flag, 3000);
     
     
 }else{
-  message.channel.send("You're typing commands to fast bruh... Have a chill for 10 seconds.")
+  message.channel.send("There are lots of commands i'm prociding right now. **Please try again after 3-5 seconds**.")
 }
 }
 }})
