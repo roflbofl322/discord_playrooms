@@ -15,6 +15,8 @@ const categories = require('./category_dbSchema')
 let all_categories = require("./categories")
 
 
+
+
 ////////////////////////////////////
 //Connect to DB
 mongoose.connect(config.db_connection, {useNewUrlParser: true}).then(() => {
@@ -137,38 +139,58 @@ else if(command == "!add_room")
 	.setDescription('Please use the following template: !add_room roomID game_type')
   .addField('game_types:', 'dota2, cs, ** !get_categories** ', true)
   .addField('Example', '!add_room 13372281488 dota2',true)
+  // .addField('game_types:', '**!get_categories** for all categories', true)
 
-  if(!message.member.hasPermission("ADMINISTRATOR"))
+
+
+    if(!message.member.hasPermission("ADMINISTRATOR"))
     {
       message.channel.send("You dont have enough permissions on this server")
       return 
       
-    }
-  else
-  {
+    }else{
+
+    const categories = require('./categories')
     let args = messageArray.slice(1); // аргументы после команды
+    // console.log(categories.categories)
     if(args[0] == undefined){
       message.channel.send(exampleEmbed);
-      return;}else if(!(message.guild.channels.get(args[0]))){
+      return;}else if(!(message.guild.channels.get(args[0])))
+      {
         message.channel.send("There is no room on this server with that ID.")
-        return}
-
+        return
+      }
     if(args[1] == undefined){
       message.channel.send(exampleEmbed);
-      return;}else if(!categories.categories.includes(args[1])){
+      return;}else if(!categories.categories.includes(args[1]))
+      {
         message.channel.send("Sry, there is no category matched: \""+args[1]+"\". Type **!get_categories** command and choose from the list")
-        return}
+        return
+      }
+
 
       db.data.findOne({room_id: args[0]} , { }, (err,data)=>
     {
-        if(data){
+        if(data)
+        {
           message.channel.send("This room is already on the monitoring")
-          return;}
-          else{
+          // console.log(data)
+          return;
+        }
+        else{
+          // var db_data = new db.data({category: args[0]});
+          // db_data.save((err,serv) =>{
+          // if(err) return console.log(err);
+          // console.log(serv.category + " saved to db")
+          // });
+          // console.log("There is no room like this in db")
+          
          var guild = client.guilds.get(message.guild.id);
          var channel = guild.channels.get(args[0]);
          var db_data = new db.data({server_id: message.guild.id  , room_id: args[0] , game_type: args[1].toLowerCase() , room_name: channel.name , server_name: message.guild.name , iconURL: message.guild.iconURL});
   
+    // console.log(channel.name);
+
     db_data.save((err,serv) =>{
       if(err) return console.log(err);
       message.channel.send(serv.server_id + " saved to db. Enter room and check website!")
@@ -202,6 +224,7 @@ else if(command == "!add_room")
         }
     })
     
+    // console.log("All rooms are initialized by now like this: " + initka.initialized[0].room_link)
   }
 
 
@@ -278,13 +301,29 @@ app.use(express.static(path.join(__dirname , 'public')));
 var initialized = [];
  client.on("ready", async () => {
   all_rooms.rooms.forEach(async room=>{
+  //   let members = channelMembers(room.room_id);
+  //   let guild = client.guilds.get(room.server_id)
+  //   let channel = guild.channels.get(room.room_id);
+  //   let URL = await channel.createInvite()
+  //  initialized.push({room: room ,members: members , channel_link: URL.url})
     
     try{
-      const members =  channelMembers(room.room_id , room.server_id)      
+      const members =  channelMembers(room.room_id , room.server_id)
+      
+      // console.log(room)
       const guild = await client.guilds.get(room.server_id)
       const channel = await guild.channels.get(room.room_id);
+      
+      // let shits = channel.guild._rawVoiceStates
+      // console.log(channel.guild._rawVoiceStates)
+      // console.log(shits)
+      // const mymemebers = channel.members
+      // console.log(mymemebers)
+      //channel.userlimit = max of the guys in the room 
       const URL = await channel.createInvite();
+      // console.log(channel.userLimit)
       initialized.push({room: room ,members: members , room_link: URL.url , room_min: members.length , room_max: channel.userLimit  })
+      
     }catch(e)
     {
       console.log(e);
@@ -313,29 +352,35 @@ client.on("channelDelete",(channel)=>{
 
 client.on("voiceStateUpdate" , (oldMember, newMember) => {  
   //When someone joining channel without room before
-  if(oldMember.voiceChannelID == undefined && newMember.voiceChannelID != undefined)
-  {
+  if(oldMember.voiceChannelID == undefined && newMember.voiceChannelID != undefined){
     initialized.forEach(elem=>{
-      if(elem.room.room_id == newMember.voiceChannelID)
-      {
-        let members = channelMembers(elem.room.room_id);
-        elem.members = members;
-        elem.room_min += 1;
-        console.log("no channel before -> entered room")
-      }
-    });
-  }
+    if(elem.room.room_id == newMember.voiceChannelID){
+      let members = channelMembers(elem.room.room_id);
+      elem.members = members;
+      elem.room_min += 1;
+      console.log("no channel before -> entered room")
+    }});
+  // console.log(initialized);
+}
   //When someone joining channel END
+ 
+
   //When someone leaving channel
   else if (newMember.voiceChannelID == undefined){
+    //if someone left room
     initialized.forEach(elem=>{
     if(elem.room.room_id == oldMember.voiceChannelID){
       let members = channelMembers(elem.room.room_id);
       elem.members = members;
       elem.room_min -= 1;
     }})
+    // console.log(initialized);
   console.log("Yes i was in the room ->  and i left it")}
   else{
+    // console.log("and here comes the shit")
+    // console.log("I was sitting here" + oldMember.voiceChannel.name)
+    // console.log("And now i'm sitting here" + newMember.voiceChannel.name)
+  
     initialized.forEach(elem=>{
       if(elem.room.room_id == oldMember.voiceChannelID){
         let members = channelMembers(elem.room.room_id);
@@ -353,6 +398,10 @@ client.on("voiceStateUpdate" , (oldMember, newMember) => {
   }
   //When someone leaving channel END
 });
+
+ //1 no room before -> enter room
+  //2 leaving room
+  //3 changed room 
 
 app.use((req ,res , next) => {
 	res.header('Access-Control-Allow-Origin','*');
