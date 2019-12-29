@@ -234,7 +234,7 @@ else if(command == "!add_room")
 }else if(command == "!get_initialize")
 {
   try{
-    console.log(initialized.length)
+    console.log(initialized)
   }catch(err)
   {
     message.channel.send(err)
@@ -309,40 +309,77 @@ app.use(express.static(path.join(__dirname , 'public')));
 
 var initialized = [];
  client.on("ready", async () => {
-  all_rooms.rooms.forEach(async room=>{
-  //   let members = channelMembers(room.room_id);
-  //   let guild = client.guilds.get(room.server_id)
-  //   let channel = guild.channels.get(room.room_id);
-  //   let URL = await channel.createInvite()
-  //  initialized.push({room: room ,members: members , channel_link: URL.url})
+  // all_rooms.rooms.forEach(async room=>{
+  // //   let members = channelMembers(room.room_id);
+  // //   let guild = client.guilds.get(room.server_id)
+  // //   let channel = guild.channels.get(room.room_id);
+  // //   let URL = await channel.createInvite()
+  // //  initialized.push({room: room ,members: members , channel_link: URL.url})
     
-    try{
-      const members =  channelMembers(room.room_id , room.server_id)
+  //   try{
+  //     const members =  channelMembers(room.room_id , room.server_id)
       
-      // console.log(room)
-      const guild = await client.guilds.get(room.server_id)
-      const channel = await guild.channels.get(room.room_id);
+  //     // console.log(room)
+  //     const guild = await client.guilds.get(room.server_id)
+  //     const channel = await guild.channels.get(room.room_id);
       
-      // let shits = channel.guild._rawVoiceStates
-      // console.log(channel.guild._rawVoiceStates)
-      // console.log(shits)
-      // const mymemebers = channel.members
-      // console.log(mymemebers)
-      //channel.userlimit = max of the guys in the room 
-      const URL = await channel.createInvite();
-      // console.log(channel.userLimit)
-      initialized.push({room: room ,members: members , room_link: URL.url , room_min: members.length , room_max: channel.userLimit  })
+  //     // let shits = channel.guild._rawVoiceStates
+  //     // console.log(channel.guild._rawVoiceStates)
+  //     // console.log(shits)
+  //     // const mymemebers = channel.members
+  //     // console.log(mymemebers)
+  //     //channel.userlimit = max of the guys in the room 
+  //     const URL = await channel.createInvite();
+  //     // console.log(channel.userLimit)
+  //     initialized.push({room: room ,members: members , room_link: URL.url , room_min: members.length , room_max: channel.userLimit  })
       
-    }catch(e)
-    {
-      console.log(e);
-    }
+  //   }catch(e)
+  //   {
+  //     console.log(e);
+  //   }
 
-  })
-  function loggging_shit() {}
-  setTimeout(loggging_shit, 5000);
+  // })
+  // function loggging_shit() {}
+  // setTimeout(loggging_shit, 5000);
   
-  // console.log("I'm ready ^_^");
+  // // console.log("I'm ready ^_^");
+  try{
+
+  
+  all_categories = []
+  categories.data.find({} , {category : 1 , _id: 0    } , (err , data)=>{
+    // categories.push(data)
+    data.forEach(element => {
+        all_categories.push(element.get('category'))
+    });
+ });
+  let refreshed_rooms = []
+  db.data.find({} , {room_id: 1 , _id:0 , game_type: 1 , room_name: 1 ,server_name: 1 , server_id: 1 , iconURL: 1    } , async (err , data)=>{
+   
+    try{
+      data.forEach(elem =>{
+        refreshed_rooms.push(elem);
+        // console.log(elem)
+    })
+      // console.log(refreshed_rooms)
+      refreshed_rooms.forEach(async room =>{
+        try{
+          init_room(room.room_id , room.server_id , room)
+          // console.log(room.room_id)
+        }catch(bofl)
+        {
+          console.log(bofl)
+        }
+      })
+    }catch(rofl)
+    {
+      console.log(rofl)
+    }
+});}
+catch(err)
+{
+  console.log(err)
+}
 });
 
 client.on("channelDelete",(channel)=>{
