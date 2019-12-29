@@ -186,24 +186,25 @@ else if(command == "!add_room")
           // console.log("There is no room like this in db")
           
          var guild = client.guilds.get(message.guild.id);
-         var channel = guild.channels.get(args[0]);
-         var db_data = new db.data({server_id: message.guild.id  , room_id: args[0] , game_type: args[1].toLowerCase() , room_name: channel.name , server_name: message.guild.name , iconURL: message.guild.iconURL});
+         var channel_name = guild.channels.get(args[0]).name;
+         var db_data = new db.data({server_id: message.guild.id  , room_id: args[0] , game_type: args[1].toLowerCase() , room_name: channel_name , server_name: message.guild.name , iconURL: message.guild.iconURL});
   
     // console.log(channel.name);
 
     db_data.save((err,serv) =>{
       if(err) return console.log(err);
-      message.channel.send(serv.server_id + " saved to db. Enter room and check website!")
+      message.channel.send(serv.room_id + " saved to db. Enter room and check website!")
       
-      initialized = []
+      
       let refreshed_rooms = []
-  db.data.find({} , {room_id: 1 , _id:0 , game_type: 1 , room_name: 1 ,server_name: 1 , server_id: 1 , iconURL: 1    } , async (err , data)=>{
+      db.data.find({room_id: args[0]} , {room_id: 1 , _id:0 , game_type: 1 , room_name: 1 ,server_name: 1 , server_id: 1 , iconURL: 1    } , async (err , data)=>{
    
     try{
+      console.log(data)
       data.forEach(elem =>{
         refreshed_rooms.push(elem);
-        // console.log(elem)
-    })
+        //  console.log("From try block after push initialize  looks like: " + initialized)
+      })
       // console.log(refreshed_rooms)
       refreshed_rooms.forEach(async room =>{
         try{
@@ -230,6 +231,14 @@ else if(command == "!add_room")
 
 
 
+}else if(command == "!get_initialize")
+{
+  try{
+    console.log(initialized.length)
+  }catch(err)
+  {
+    message.channel.send(err)
+  }
 }
 else{
 let args = messageArray.slice(1); // аргументы после команды
@@ -257,7 +266,7 @@ if (command_file) {
 //////////////////////////////////////////                      
 
 
-function channelMembers (room_ID , server_ID) { // return Array
+async function channelMembers (room_ID , server_ID) { // return Array
   var channelMembers = client.channels.get(room_ID).members;
   
   var arrayName = [];
@@ -276,7 +285,7 @@ function channelMembers (room_ID , server_ID) { // return Array
 async function init_room (room_ID , server_ID , room)
 {
   try{
-    const members_i =  channelMembers(room_ID, server_ID)
+    const members_i =  await channelMembers(room_ID, server_ID)
     const guild_i =  client.guilds.get(server_ID)
     const channel_i = await guild_i.channels.get(room_ID);
     const URL_i = await channel_i.createInvite();
