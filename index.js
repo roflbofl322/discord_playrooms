@@ -266,7 +266,7 @@ if (command_file) {
 //////////////////////////////////////////                      
 
 
-async function channelMembers (room_ID , server_ID) { // return Array
+async function channelMembers (room_ID) { // return Array
   var channelMembers = client.channels.get(room_ID).members;
   
   var arrayName = [];
@@ -285,7 +285,7 @@ async function channelMembers (room_ID , server_ID) { // return Array
 async function init_room (room_ID , server_ID , room)
 {
   try{
-    const members_i =  await channelMembers(room_ID, server_ID)
+    const members_i =  await channelMembers(room_ID)
     const guild_i =  client.guilds.get(server_ID)
     const channel_i = await guild_i.channels.get(room_ID);
     const URL_i = await channel_i.createInvite();
@@ -396,12 +396,12 @@ client.on("channelDelete",(channel)=>{
   
 })
 
-client.on("voiceStateUpdate" , (oldMember, newMember) => {  
+client.on("voiceStateUpdate" , async (oldMember, newMember) => {  
   //When someone joining channel without room before
   if(oldMember.voiceChannelID == undefined && newMember.voiceChannelID != undefined){
-    initialized.forEach(elem=>{
+    initialized.forEach( async elem=>{
     if(elem.room.room_id == newMember.voiceChannelID){
-      let members = channelMembers(elem.room.room_id);
+      let members = await channelMembers(elem.room.room_id);
       elem.members = members;
       elem.room_min += 1;
       console.log("no channel before -> entered room")
@@ -414,9 +414,9 @@ client.on("voiceStateUpdate" , (oldMember, newMember) => {
   //When someone leaving channel
   else if (newMember.voiceChannelID == undefined){
     //if someone left room
-    initialized.forEach(elem=>{
+    initialized.forEach( async elem=>{
     if(elem.room.room_id == oldMember.voiceChannelID){
-      let members = channelMembers(elem.room.room_id);
+      let members = await channelMembers(elem.room.room_id)
       elem.members = members;
       elem.room_min -= 1;
     }})
@@ -427,15 +427,15 @@ client.on("voiceStateUpdate" , (oldMember, newMember) => {
     // console.log("I was sitting here" + oldMember.voiceChannel.name)
     // console.log("And now i'm sitting here" + newMember.voiceChannel.name)
   
-    initialized.forEach(elem=>{
+    initialized.forEach(async elem=>{
       if(elem.room.room_id == oldMember.voiceChannelID){
-        let members = channelMembers(elem.room.room_id);
+        let members = await channelMembers(elem.room.room_id);
         elem.members = members;
         elem.room_min -= 1;
       }})
-      initialized.forEach(elem=>{
+      initialized.forEach( async elem=>{
         if(elem.room.room_id == newMember.voiceChannelID){
-          let members = channelMembers(elem.room.room_id);
+          let members = await channelMembers(elem.room.room_id);
           elem.members = members;
           elem.room_min += 1;
           console.log("no channel before -> entered room")
