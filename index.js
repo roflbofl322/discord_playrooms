@@ -279,7 +279,7 @@ async function channelMembers (room_ID) { // return Array
   console.log("those above are channel members inside 'channelMembers function'")
   
   for await (let mapV of members_of_the_channel.values()) {
-    const avatarurl = "https://cdn.discordapp.com/avatars/"+ mapV.user.id+"/"+mapV.user.avatar+".jpg?size=128"
+    const avatarurl = "https://cdn.discordapp.com/avatars/"+ mapV.user.id+"/"+mapV.user.avatar+".jpg?size=512"
     arrayName.push({nickname: mapV.user.username , avatar: avatarurl});
   }
   console.log(arrayName)
