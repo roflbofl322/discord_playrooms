@@ -89,43 +89,60 @@ if (command == "!refresh")
   // console.log("yes command equals refresh")
   if(myFlag){
   //grab all rooms again 
-  initialized = []
-  all_categories = []
-  categories.data.find({} , {category : 1 , _id: 0    } , (err , data)=>{
-    // categories.push(data)
-    data.forEach(element => {
-        all_categories.push(element.get('category'))
+  try{
+    initialized = []
+    all_categories = []
+    await categories.data.find({} , {category : 1 , _id: 0    } , (err , data)=>{
+        data.forEach(async element => {
+            await all_categories.push(element.get('category'))
+        });
     });
- });
-  let refreshed_rooms = []
-  db.data.find({} , {room_id: 1 , _id:0 , game_type: 1 , room_name: 1 ,server_name: 1 , server_id: 1 , iconURL: 1    } , async (err , data)=>{
-   
-    try{
-      data.forEach(elem =>{
-        refreshed_rooms.push(elem);
-        // console.log(elem)
-    })
-      // console.log(refreshed_rooms)
-      refreshed_rooms.forEach(async room =>{
-        try{
-          init_room(room.room_id , room.server_id , room)
-          // console.log(room.room_id)
-        }catch(bofl)
-        {
-          console.log(bofl)
-        }
-      })
-    }catch(rofl)
-    {
-      console.log(rofl)
-    }
-});
+    console.log(all_categories)
+    console.log( "All_categories.lenght:"+ all_categories.length )
+    console.log("all_categories was grabbed inside 'ready' event")
+    console.log("")
+
+    let refreshed_rooms = []
+    await db.data.find({} , {room_id: 1 , _id:0 , game_type: 1 , room_name: 1 ,server_name: 1 , server_id: 1 , iconURL: 1    } , async (err , data)=>{    
+         data.forEach(async elem =>{
+              // initialized.push(elem);
+              console.log(elem)
+              // const members_i = await channelMembers(elem.room_id)
+              // console.log(members_i)
+              // console.log("Above is members_i variable inside ready event")
+              // console.log("For this room id: "+ elem.room_id)
+              await init_room(elem.room_id , elem.server_id , elem)
+
+        })
+        // console.log(refreshed_rooms)
+        // console.log("Refreshed_rooms.lenght: " + refreshed_rooms.length)
+        // console.log("all rooms from db taken into refreshed_rooms inside 'ready' event ")
+        // console.log("")
+    });
+    console.log(initialized)
+    console.log("this above is initialized")
+
+    
+    // refreshed_rooms.forEach(room =>{
+    //     init_room(room.room_id , room.server_id , room)    
+    // })
+    // console.log(initialized)
+    // console.log("initialized variable after 'init_room' function inside 'ready' ")
+    
+
+
+
     myFlag = 0
     function flag() {
       myFlag = 1
     }
     message.channel.send("Refreshed.")
     setTimeout(flag, 3000);
+    }
+    catch(err)
+    {
+      console.log(err)
+    }
   }else{message.channel.send("There are lots of commands i'm prociding right now. **Please try again after 3-5 seconds**.")}
 
 }//->if command equals "refresh" END
@@ -188,7 +205,7 @@ else if(command == "!add_room")
           
          let guild = client.guilds.get(message.guild.id);
          let channel_name = guild.channels.get(args[0]).name;
-         let db_data = new db.data({server_id: message.guild.id  , room_id: args[0] , game_type: args[1].toLowerCase() , room_name: channel_name , server_name: message.guild.name , iconURL: message.guild.iconURL});
+         let db_data = new db.data({server_id: message.guild.id  , room_id: args[0] , game_type: args[1].toLowerCase() , room_name: channel_name , server_name: message.guild.name , iconURL: message.guild.iconURL+"?size=512"});
   
     // console.log(channel.name);
 
