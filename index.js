@@ -84,6 +84,7 @@ if(!message.content.startsWith(prefix)) return;
 let messageArray = message.content.split(' ') ;// разделение пробелами
 let command = messageArray[0]; // команда после префикса
 console.log(command);
+
 if (command == "!refresh")
 {
   // console.log("yes command equals refresh")
@@ -114,23 +115,10 @@ if (command == "!refresh")
               await init_room(elem.room_id , elem.server_id , elem)
 
         })
-        // console.log(refreshed_rooms)
-        // console.log("Refreshed_rooms.lenght: " + refreshed_rooms.length)
-        // console.log("all rooms from db taken into refreshed_rooms inside 'ready' event ")
-        // console.log("")
+     
     });
     console.log(initialized)
     console.log("this above is initialized")
-
-    
-    // refreshed_rooms.forEach(room =>{
-    //     init_room(room.room_id , room.server_id , room)    
-    // })
-    // console.log(initialized)
-    // console.log("initialized variable after 'init_room' function inside 'ready' ")
-    
-
-
 
     myFlag = 0
     function flag() {
@@ -161,7 +149,7 @@ else if(command == "!add_room")
 
 
 
-    if(!message.member.hasPermission("ADMINISTRATOR"))
+    if(!message.member.hasPermission("ADMINISTRATOR") )
     {
       message.channel.send("You dont have enough permissions on this server")
       return 
@@ -257,6 +245,50 @@ else if(command == "!add_room")
   {
     message.channel.send(err)
   }
+} else if(command == "!delete_room")
+{
+  try{
+    if(!message.member.hasPermission("ADMINISTRATOR") )
+    {
+      message.channel.send("You dont have enough permissions on this server")
+      return 
+      
+    }else{
+    let args = await messageArray.slice(1); // аргументы после команды
+    let channel_to_remove_from_db = await args[0] ;
+
+    if(args[0] == undefined){
+      message.channel.send("Please specify room ID you want to delete (**!delete_room 13372281488 **)");
+      return;}else if(!(message.guild.channels.get(args[0])))
+      {
+        message.channel.send("There is no room on this server with that ID.")
+        return
+      }
+
+    for (let i = 0 ; i < initialized.length  ; i++)
+              {
+                if(initialized[i].room.room_id == channel_to_remove_from_db)
+                {
+                  initialized.splice(i , 1)
+                  message.channel.send("Room was deleted from monitoring")
+                }
+              }
+    await db.data.deleteOne({room_id: channel_to_remove_from_db}, async function(err) {
+      if (!err) {
+              console.log("Room deleted succesfully")
+      }
+      else {
+              console.log(err)
+      }
+      
+    
+  });
+  }
+  }catch(err)
+  {
+    console.log(err)
+  }
+
 }
 else{
 let args = messageArray.slice(1); // аргументы после команды
@@ -389,18 +421,31 @@ catch(err)
 }
 });
 
-client.on("channelDelete",(channel)=>{
+client.on("channelDelete", async (channel)=>{
   // console.log(channel.id)
-  let channel_to_remove_from_db = channel.id.toString();
-  db.data.deleteOne({room_id: channel_to_remove_from_db}, function(err) {
+  try{
+  let channel_to_remove_from_db = await channel.id.toString();
+  for (let i = 0 ; i < initialized.length  ; i++)
+            {
+              if(initialized[i].room.room_id == channel_to_remove_from_db)
+              {
+                initialized.splice(i , 1)
+              }
+            }
+  await db.data.deleteOne({room_id: channel_to_remove_from_db}, async function(err) {
     if (!err) {
             console.log("Room deleted succesfully")
     }
     else {
             console.log(err)
     }
-});
+    
   
+});
+}catch(err)
+{
+  console.log(err)
+}
 })
 
 client.on("voiceStateUpdate" , async (oldMember, newMember) => {  
