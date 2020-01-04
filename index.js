@@ -450,6 +450,9 @@ client.on("channelDelete", async (channel)=>{
 
 client.on("voiceStateUpdate" , async (oldMember, newMember) => {  
   //When someone joining channel without room before
+  try{
+
+  
   if(oldMember.voiceChannelID == undefined && newMember.voiceChannelID != undefined){
     initialized.forEach( async elem=>{
     if(elem.room.room_id == newMember.voiceChannelID){
@@ -522,6 +525,11 @@ client.on("voiceStateUpdate" , async (oldMember, newMember) => {
         }});  
       
   }
+}
+catch(err)
+{
+  console.log("There were deleted rooms and members in it.")
+}
   //When someone leaving channel END
 });
 
