@@ -165,6 +165,10 @@ else if(command == "!add_room")
       {
         message.channel.send("There is no room on this server with that ID.")
         return
+      } else if (message.guild.channels.get(args[0]).type != 'voice')
+      {
+        console.log("Oh sry my little nigga but this shit isnt voice channel")
+        return         
       }
     if(args[1] == undefined){
       message.channel.send(exampleEmbed);
