@@ -492,6 +492,7 @@ client.on("voiceStateUpdate" , async (oldMember, newMember) => {
     // console.log("and here comes the shit")
     // console.log("I was sitting here" + oldMember.voiceChannel.name)
     // console.log("And now i'm sitting here" + newMember.voiceChannel.name)
+    // test
   
     initialized.forEach(async elem=>{
       if(elem.room.room_id == oldMember.voiceChannelID){
