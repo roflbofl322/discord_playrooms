@@ -84,8 +84,116 @@ if(!message.content.startsWith(prefix)) return;
 let messageArray = message.content.split(' ') ;// разделение пробелами
 let command = messageArray[0]; // команда после префикса
 console.log(command);
+if(command == "!add_all_rooms")
+{
+  //get the id of the server 
+  //run through all rooms and grab it 
+  //check if room isnt already on the monitoring 
+  //if not add it 
+  let guild_for_all_rooms = await message.guild.id
+  for await (let mapA of message.guild.channels.values())
+  {
+    if( mapA.type != "voice") continue;
+    
+    await  db.data.findOne({room_id: mapA.id} , { }, (err,data)=>
+    {
+      if(data)
+        {
+          console.log("This room is already on the monitoring")
+          return;
+        }
+      else{
+        let guild = client.guilds.get(message.guild.id);
+        let channel_name = guild.channels.get(mapA.id).name;
+        let db_data = new db.data({server_id: message.guild.id  , room_id: mapA.id , game_type: "talking" , room_name: channel_name , server_name: message.guild.name , iconURL: message.guild.iconURL+"?size=512"});
+ 
+   // console.log(channel.name);
 
-if (command == "!refresh")
+   db_data.save((err,serv) =>{
+     if(err) return console.log(err);
+     message.channel.send(serv.room_id + " saved to db. Enter room and check website!")
+     
+     
+     let refreshed_rooms = []
+     db.data.find({room_id: mapA.id} , {room_id: 1 , _id:0 , game_type: 1 , room_name: 1 ,server_name: 1 , server_id: 1 , iconURL: 1    } , async (err , data)=>{
+  
+   try{
+     console.log(data)
+     data.forEach(elem =>{
+       refreshed_rooms.push(elem);
+       //  console.log("From try block after push initialize  looks like: " + initialized)
+     })
+     // console.log(refreshed_rooms)
+     refreshed_rooms.forEach(async room =>{
+       try{
+         init_room(room.room_id , room.server_id , room)
+         // console.log(room.room_id)
+       }catch(bofl)
+       {
+         console.log(bofl)
+       }
+     })
+   }catch(rofl)
+   {
+     console.log(rofl)
+   }
+});
+
+   });
+      }
+    })
+
+
+  }
+}
+else if(command == "!change_category")
+{
+  //check if room is in db 
+  //if yes change the category there from given parameter
+  //update the initialize category 
+
+  const categories = require('./categories')
+  let args = messageArray.slice(1); // аргументы после команды
+  // console.log(categories.categories)
+  if(args[0] == undefined){
+    message.channel.send(exampleEmbed);
+    return;}else if(!(message.guild.channels.get(args[0])))
+    {
+      message.channel.send("There is no room on this server with that ID.")
+      return
+    } else if (message.guild.channels.get(args[0]).type != 'voice')
+    {
+      console.log("Oh sry my little nigga but this shit isnt voice channel")
+      return         
+    }
+  if(args[1] == undefined){
+    message.channel.send(exampleEmbed);
+    return;}else if(!categories.categories.includes(args[1]))
+    {
+      message.channel.send("Sry, there is no category matched: \""+args[1]+"\". Type **!get_categories** command and choose from the list")
+      return
+    }
+
+    await db.data.updateOne({room_id: args[0]} , {$set:{game_type: args[1] }} , {}, err =>{
+      if(!err)
+      {
+        message.channel.send("Category succesfully changed")
+      }
+      else
+      {
+        console.log(err)
+      }
+    })
+    initialized.forEach(async elem=>{
+      if(elem.room.room_id == args[0])
+      {
+        elem.room.game_type = args[1]
+      }
+      else return 
+    })
+  
+}
+else if (command == "!refresh")
 {
   // console.log("yes command equals refresh")
   if(myFlag){
@@ -149,12 +257,12 @@ else if(command == "!add_room")
 
 
 
-    if(!message.member.hasPermission("ADMINISTRATOR") )
-    {
-      message.channel.send("You dont have enough permissions on this server")
-      return 
+    // if(!message.member.hasPermission("ADMINISTRATOR") )
+    // {
+    //   message.channel.send("You dont have enough permissions on this server")
+    //   return 
       
-    }else{
+    // }else{
 
     const categories = require('./categories')
     let args = messageArray.slice(1); // аргументы после команды
@@ -179,7 +287,7 @@ else if(command == "!add_room")
       }
 
 
-      db.data.findOne({room_id: args[0]} , { }, (err,data)=>
+    await  db.data.findOne({room_id: args[0]} , { }, (err,data)=>
     {
         if(data)
         {
@@ -236,20 +344,18 @@ else if(command == "!add_room")
     })
     
     // console.log("All rooms are initialized by now like this: " + initka.initialized[0].room_link)
-  }
-
-
-
-
-}else if(command == "!get_initialize")
-{
-  try{
-    console.log(initialized)
-  }catch(err)
-  {
-    message.channel.send(err)
-  }
-} else if(command == "!delete_room")
+  // } else
+}
+// else if(command == "!get_initialize")
+// {
+//   try{
+//     console.log(initialized)
+//   }catch(err)
+//   {
+//     message.channel.send(err)
+//   }
+// } 
+else if(command == "!delete_room")
 {
   try{
     if(!message.member.hasPermission("ADMINISTRATOR") )
@@ -274,12 +380,11 @@ else if(command == "!add_room")
                 if(initialized[i].room.room_id == channel_to_remove_from_db)
                 {
                   initialized.splice(i , 1)
-                  message.channel.send("Room was deleted from monitoring")
                 }
               }
     await db.data.deleteOne({room_id: channel_to_remove_from_db}, async function(err) {
       if (!err) {
-              console.log("Room deleted succesfully")
+              message.channel.send("Room deleted succesfully")
       }
       else {
               console.log(err)
@@ -293,6 +398,39 @@ else if(command == "!add_room")
     console.log(err)
   }
 
+}
+else if(command == "!delete_all_rooms")
+{
+  if (!message.member.hasPermission("ADMINISTRATOR")) return;
+  await db.data.remove({server_id:  message.guild.id} , async err =>{
+    if(!err)
+    {
+      console.log("Rooms where removed from db on this server: "  + message.guild.name)
+
+      for await( let mapA of message.guild.channels.values())
+      {
+        console.log("This beyond is mapV")
+        console.log(mapA.type)
+        if(mapA.type != "voice")
+        {
+          continue
+        }
+    
+        for  (let i = 0 ; i < initialized.length  ; i++)
+                {
+                  if(initialized[i].room.room_id == mapA.id.toString())
+                  {
+                    initialized.splice(i , 1)
+                  }
+                }
+        
+      }
+    }
+    else
+    {
+      console.log("Idk know bruh some kind of error here, take a look")
+    }
+  })
 }
 else{
 let args = messageArray.slice(1); // аргументы после команды
@@ -332,7 +470,7 @@ async function channelMembers (room_ID) { // return Array
   console.log("those above are channel members inside 'channelMembers function'")
   
   for await (let mapV of members_of_the_channel.values()) {
-    const avatarurl = "https://cdn.discordapp.com/avatars/"+ mapV.user.id+"/"+mapV.user.avatar+".jpg?size=512"
+    const avatarurl = "https://cdn.discordapp.com/avatars/"+ mapV.user.id+"/"+mapV.user.avatar+".jpg?size=256"
     arrayName.push({nickname: mapV.user.username , avatar: avatarurl});
   }
   console.log(arrayName)
@@ -536,10 +674,167 @@ catch(err)
 }
   //When someone leaving channel END
 });
+let stupid_flag = 0
+// client.on("guildCreate" , async new_guild =>{
+//   //foreach channel in guild 
+//   //which is not text channel 
+//   //add it to db 
+//   try{
+//     stupid_flag = 1 ;
+//     console.log("those beyond are guild channels")
+//     for await (let mapV of new_guild.values()) 
+//     {
+//       console.log("Those beyond are the types of the channel")
+//       console.log(mapv.type)
+//     }
+//   }
+//   catch(err)
+//   {
+//     console.log("bruh u fucked up")
+//   }
+// })
 
- //1 no room before -> enter room
-  //2 leaving room
-  //3 changed room 
+
+  client.on("channelCreate" , async created_channel =>{
+    try{
+    if(created_channel.type != 'voice')
+    {
+      console.log("Text channel doest equals to voice")
+      return
+    }
+    console.log("My stupid flag eq: " + stupid_flag )
+    console.log(created_channel)
+      // console.log(created_channel)
+      // let guild = await client.guilds.get(created_channel.guild.id);
+      // console.log("This shit is the problem here")
+      // console.log(client.guilds.get(created_channel.guild.id))
+      // let channel_name = await guild.channels.get(created_channel.id).name;
+      let db_data = await new db.data({server_id: created_channel.guild.id  , room_id: created_channel.id , game_type: "talking" , room_name: created_channel.name , server_name: created_channel.guild.name , iconURL: created_channel.guild.iconURL+"?size=512"});
+
+      
+      db_data.save((err,serv) =>{
+        if(err) return console.log(err);
+        console.log(serv.room_id + " saved to db. Enter room and check website!")
+        
+        
+        let refreshed_rooms = []
+        db.data.find({room_id: created_channel.id} , {room_id: 1 , _id:0 , game_type: 1 , room_name: 1 ,server_name: 1 , server_id: 1 , iconURL: 1    } , async (err , data)=>{
+     
+      try{
+        console.log(data)
+        data.forEach(elem =>{
+          refreshed_rooms.push(elem);
+          //  console.log("From try block after push initialize  looks like: " + initialized)
+        })
+        // console.log(refreshed_rooms)
+        refreshed_rooms.forEach(async room =>{
+          try{
+            init_room(room.room_id , room.server_id , room)
+            // console.log(room.room_id)
+          }catch(bofl)
+          {
+            console.log(bofl)
+          }
+        })
+      }catch(rofl)
+      {
+        console.log(rofl)
+      }
+  });
+  
+      });
+
+    
+  }catch(err)
+  {
+    console.log(err)
+  }
+  });
+
+  client.on("guildDelete" , async deleted_guild =>{
+    try{
+
+  console.log("This little shit right here: ")
+  
+  // console.log(deleted_guild.channels)
+ 
+    await db.data.deleteMany({server_id: deleted_guild.id} , async err =>{
+      if(!err)
+      {
+        console.log("Rooms where removed from db on this server: "  + deleted_guild.name)
+      }
+      else
+      {
+        console.log("Idk know bruh some kind of error here, take a look")
+      }
+    })
+
+    for await( let mapS of deleted_guild.channels.values())
+    {
+      console.log("This beyond is mapV")
+      console.log(mapS.type)
+      if(mapS.type != "voice")
+      {
+        continue
+      }
+  
+      for  (let i = 0 ; i < initialized.length  ; i++)
+              {
+                if(initialized[i].room.room_id == mapS.id.toString())
+                {
+                  initialized.splice(i , 1)
+                }
+              }
+      
+    }
+  }catch(err)
+  {
+    console.log(err)
+  }
+  })
+
+ client.on("channelUpdate" , async (oldChannel , newChannel)=>{
+   //check the id of the room
+   //check if this id is already in db 
+   //if yes change name on the db and in initialize
+  //  console.log(newChannel.id)
+  try{
+
+  
+  await  db.data.findOne({room_id: newChannel.id} , { }, async (err,data)=>
+  {
+    if(data)
+    {
+    // console.log("Yes this rooms i")
+      await db.data.updateOne({room_id: newChannel.id} , {$set:{room_name: newChannel.name }} , {}, err =>{
+        if(!err)
+        {
+          console.log("Name was updated on db side")
+        }
+        else
+        {
+          console.log(err)
+        }
+      })
+      initialized.forEach(async elem=>{
+        if(elem.room.room_id == newChannel.id)
+        {
+          elem.room.room_name = newChannel.name
+        }
+        else return 
+      })
+    }
+    else
+    {
+      // console.log("This rooms isnt on db yet")
+      return
+    }
+  })
+}
+catch(err){
+  console.log(err)
+}
+ }) 
 
 app.use((req ,res , next) => {
 	res.header('Access-Control-Allow-Origin','*');
@@ -553,6 +848,7 @@ app.use((req ,res , next) => {
 //	return res.status(200).json({});
 //}
 });
+
 
  app.get('/', function(req, res) {
    console.log("Page was updated")
