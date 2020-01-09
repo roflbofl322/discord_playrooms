@@ -14,6 +14,7 @@ let myFlag = 1
 const categories = require('./category_dbSchema')
 let all_categories = require("./categories")
 let initialized = [];
+let categories_for_backend = []
 
 
 
@@ -355,6 +356,19 @@ else if(command == "!add_room")
 //     message.channel.send(err)
 //   }
 // } 
+else if(command == "!help")
+{
+  let sEmbed = new Discord.RichEmbed()
+  .setColor("#0xfd6102")
+  .addField("Add all rooms to monitoring with **talking** category (executed automatically): " , "**!add_all_rooms**" , false)
+  .addField("Delete all rooms from monitoring:" ,"**!delete_all_rooms**" , false)
+  .addField("Add room to a monitoring (type !add_room for more help): " ,"**!add_room**" , false)
+  .addField("Delete room from monitoring (type !delete_room for more help): " , "**!delete_room**" , false)
+  .addField("Change room category (type !change_category for more info):" , "**!change_category**")
+
+
+  message.channel.send(sEmbed)
+}
 else if(command == "!delete_room")
 {
   try{
@@ -368,7 +382,7 @@ else if(command == "!delete_room")
     let channel_to_remove_from_db = await args[0] ;
 
     if(args[0] == undefined){
-      message.channel.send("Please specify room ID you want to delete (**!delete_room 13372281488 **)");
+      message.channel.send("Please specify ID for room you want to delete from monitoring (Example: **!delete_room 13372281488**)");
       return;}else if(!(message.guild.channels.get(args[0])))
       {
         message.channel.send("There is no room on this server with that ID.")
@@ -470,7 +484,16 @@ async function channelMembers (room_ID) { // return Array
   console.log("those above are channel members inside 'channelMembers function'")
   
   for await (let mapV of members_of_the_channel.values()) {
-    const avatarurl = "https://cdn.discordapp.com/avatars/"+ mapV.user.id+"/"+mapV.user.avatar+".jpg?size=256"
+    let avatarurl 
+    // console.log("This is user avatar "+ mapV.user.avatar)
+    if ( mapV.user.avatar == null)
+    {
+      avatarurl = "https://i.imgur.com/tXEB2vZ.png"
+    }
+    else
+    {
+      avatarurl = "https://cdn.discordapp.com/avatars/"+ mapV.user.id+"/"+mapV.user.avatar+".jpg?size=256"
+    }
     arrayName.push({nickname: mapV.user.username , avatar: avatarurl});
   }
   console.log(arrayName)
@@ -518,8 +541,18 @@ app.use(express.static(path.join(__dirname , 'public')));
  client.on("ready", async () => {
  
 try{
+
+    client.user.setStatus('online')
+    client.user.setPresence({
+      game:{
+        name:"discord-rooms.com | !help",
+        type: "PLAYING",
+        url: "https://discord-rooms.com"
+      }
+    })
+    // client.user.setActivity("discord-rooms.com | !help" , {type:"WATCHING"})
     all_categories = []
-    await categories.data.find({} , {category : 1 , _id: 0    } , (err , data)=>{
+    await categories.data.find({} , {category : 1 , _id: 0    } , async (err , data)=>{
         data.forEach(async element => {
             await all_categories.push(element.get('category'))
         });
@@ -528,6 +561,13 @@ try{
     console.log( "All_categories.lenght:"+ all_categories.length )
     console.log("all_categories was grabbed inside 'ready' event")
     console.log("")
+
+    await categories.data.find({}, {category: 1 , image_url: 1 , friendly_name: 1 , color1 : 1 , color2: 1 , _id:0}, async (err ,data)=>{
+      console.log("Those are the data im looking for ")
+      // console.log(data)
+      categories_for_backend = data
+      console.log(categories_for_backend)
+    })
 
     let refreshed_rooms = []
     await db.data.find({} , {room_id: 1 , _id:0 , game_type: 1 , room_name: 1 ,server_name: 1 , server_id: 1 , iconURL: 1    } , async (err , data)=>{    
@@ -854,7 +894,8 @@ app.use((req ,res , next) => {
    console.log("Page was updated")
   res.status(200).json({
       initialized,
-      all_categories
+      all_categories,
+      categories_for_backend
   })
 
   // client.channels.get('611158172354347041').send("someone entered site");
